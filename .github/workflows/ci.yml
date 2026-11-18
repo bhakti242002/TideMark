@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      # Report every Node version; a failure on one shouldn't hide the other.
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Nothing after checkout talks to GitHub, so don't leave the token in .git.
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - run: npm ci
+
+      # Tests run before any build so CI proves they resolve workspace packages
+      # from source. A dist/ here would let a stale build mask a broken setup.
+      - name: Check no build output exists
+        run: |
+          found=$(find . -name node_modules -prune -o -type d -name dist -print)
+          if [ -n "$found" ]; then
+            echo "::error::dist/ exists before tests run:"
+            echo "$found"
+            exit 1
+          fi
+
+      - run: npm test
+
+      - run: npm run typecheck
