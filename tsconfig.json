@@ -1,0 +1,12 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/engine" },
+    { "path": "packages/engine/test" },
+    { "path": "packages/server" },
+    { "path": "packages/server/test" },
+    { "path": "packages/evals" },
+    { "path": "packages/evals/test" },
+    { "path": "tools" }
+  ]
+}
